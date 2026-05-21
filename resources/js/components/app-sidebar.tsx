@@ -4,14 +4,34 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, UsersRound, CalendarArrowUp, HandHeart, List } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         url: '/dashboard',
-        icon: LayoutGrid,
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'Kepemimpinan',
+        url: '/kepemimpinan',
+        icon: UsersRound,
+    },
+    {
+        title: 'Event',
+        url: '/event',
+        icon: CalendarArrowUp,
+    },
+    {
+        title: 'Pelayanan',
+        url: '/pelayanan',
+        icon: HandHeart,
+    },
+    {
+        title: 'Komisi',
+        url: '/komisi',
+        icon: List,
     },
 ];
 
