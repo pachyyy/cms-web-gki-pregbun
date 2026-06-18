@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutDashboard, UsersRound, CalendarArrowUp, HandHeart, List } from 'lucide-react';
+import { BookOpen, Folder, LayoutDashboard, UsersRound, CalendarArrowUp, HandHeart, List, Ban, Hammer, UserRoundPen, Church } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -14,9 +14,19 @@ const mainNavItems: NavItem[] = [
         icon: LayoutDashboard,
     },
     {
+        title: 'User',
+        url: '/user',
+        icon: UserRoundPen,
+    },
+    {
         title: 'Kepemimpinan',
         url: '/kepemimpinan',
         icon: UsersRound,
+    },
+    {
+        title: 'Kebaktian',
+        url: '/kebaktian',
+        icon: Church,
     },
     {
         title: 'Event',
@@ -32,6 +42,16 @@ const mainNavItems: NavItem[] = [
         title: 'Komisi',
         url: '/komisi',
         icon: List,
+    },
+    {
+        title: 'Pembangunan',
+        url: '/pembangunan',
+        icon: Hammer,
+    },
+    {
+        title: 'Dummy',
+        url: '/dummy',
+        icon: Ban,
     },
 ];
 

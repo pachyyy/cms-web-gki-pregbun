@@ -68,6 +68,11 @@ return [
             'use_path_style_endpoint' => true,
         ],
 
+        'cloudinary' => [
+            'driver' => 'cloudinary',
+            'url' => env('CLOUDINARY_URL'),
+        ],
+
     ],
 
     /*
