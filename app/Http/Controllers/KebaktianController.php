@@ -38,7 +38,9 @@ class KebaktianController extends Controller
     public function storeImage(Request $request, Kebaktian $kebaktian)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,webp,avif|max:8192',
+            // Accept large originals; Cloudinary compresses on delivery so the
+            // user never has to shrink the file themselves.
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp,avif|max:20480',
         ]);
 
         if ($kebaktian->images()->count() >= self::MAX_IMAGES) {
@@ -52,9 +54,18 @@ class KebaktianController extends Controller
             ['folder' => 'kebaktian/'.$kebaktian->slug]
         );
 
+        // Store an optimized delivery URL: cap width at 1920px and let Cloudinary
+        // pick the best quality + format (WebP/AVIF). This keeps the delivered
+        // image well under 2MB regardless of how large the upload was.
+        $optimizedUrl = str_replace(
+            '/image/upload/',
+            '/image/upload/c_limit,w_1920,q_auto,f_auto/',
+            $response['secure_url']
+        );
+
         $kebaktian->images()->create([
             'public_id' => $response['public_id'],
-            'url' => $response['secure_url'],
+            'url' => $optimizedUrl,
             'order' => ($kebaktian->images()->max('order') ?? 0) + 1,
         ]);
 

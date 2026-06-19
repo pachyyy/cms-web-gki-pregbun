@@ -1,3 +1,4 @@
+import { DatePicker } from '@/components/date-picker';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -163,12 +164,10 @@ export default function Pembangunan({ latest, history }: { latest: PembangunanUp
                             <form onSubmit={submit} className="space-y-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="update_date">Tanggal Update (PER ...)</Label>
-                                    <Input
+                                    <DatePicker
                                         id="update_date"
-                                        type="date"
                                         value={data.update_date}
-                                        onChange={(e) => setData('update_date', e.target.value)}
-                                        required
+                                        onChange={(value) => setData('update_date', value)}
                                     />
                                     <InputError message={errors.update_date} />
                                 </div>
@@ -193,23 +192,19 @@ export default function Pembangunan({ latest, history }: { latest: PembangunanUp
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="rincian_start_date">Rincian Mulai</Label>
-                                        <Input
+                                        <DatePicker
                                             id="rincian_start_date"
-                                            type="date"
                                             value={data.rincian_start_date}
-                                            onChange={(e) => setData('rincian_start_date', e.target.value)}
-                                            required
+                                            onChange={(value) => setData('rincian_start_date', value)}
                                         />
                                         <InputError message={errors.rincian_start_date} />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="rincian_end_date">Rincian Selesai</Label>
-                                        <Input
+                                        <DatePicker
                                             id="rincian_end_date"
-                                            type="date"
                                             value={data.rincian_end_date}
-                                            onChange={(e) => setData('rincian_end_date', e.target.value)}
-                                            required
+                                            onChange={(value) => setData('rincian_end_date', value)}
                                         />
                                         <InputError message={errors.rincian_end_date} />
                                     </div>
