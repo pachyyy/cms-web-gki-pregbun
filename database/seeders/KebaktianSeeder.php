@@ -18,6 +18,7 @@ class KebaktianSeeder extends Seeder
                 'location' => 'Ruang Ibadah Utama, Jl. Pregolan Bunder 36',
                 'audience' => 'Seluruh Jemaat & umum',
                 'youtube_url' => 'https://www.youtube.com/@gkipregolanbunder',
+                'home_subtitle' => '07.30 · 10.00 · 17.00 WIB',
                 'order' => 1,
             ],
             [
@@ -28,6 +29,7 @@ class KebaktianSeeder extends Seeder
                 'location' => 'GSG Lantai 2, Jl. Pregolan Bunder 36',
                 'audience' => 'Usia 18 – 35 tahun',
                 'youtube_url' => 'https://www.youtube.com/@gkipregolanbunder',
+                'home_subtitle' => 'MINGGU 10.00 WIB',
                 'order' => 2,
             ],
             [
@@ -38,6 +40,7 @@ class KebaktianSeeder extends Seeder
                 'location' => 'Ruang Ibadah Remaja, Jl. Pregolan Bunder 23',
                 'audience' => 'Usia 13 – 17 tahun',
                 'youtube_url' => null,
+                'home_subtitle' => 'MINGGU 10.00 WIB',
                 'order' => 3,
             ],
             [
@@ -48,6 +51,7 @@ class KebaktianSeeder extends Seeder
                 'location' => 'Ruang Sekolah Minggu, Jl. Pregolan Bunder 36',
                 'audience' => 'Anak-anak',
                 'youtube_url' => null,
+                'home_subtitle' => 'MINGGU 10.00 WIB',
                 'order' => 4,
             ],
         ];

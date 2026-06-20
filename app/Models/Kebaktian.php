@@ -15,6 +15,9 @@ class Kebaktian extends Model
         'location',
         'audience',
         'youtube_url',
+        'home_image_public_id',
+        'home_image_url',
+        'home_subtitle',
         'order',
     ];
 

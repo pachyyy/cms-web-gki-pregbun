@@ -28,6 +28,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('kebaktian/{kebaktian}/images', [KebaktianController::class, 'storeImage'])->name('kebaktian.images.store');
     Route::put('kebaktian/{kebaktian}/images/reorder', [KebaktianController::class, 'reorderImages'])->name('kebaktian.images.reorder');
     Route::delete('kebaktian/images/{image}', [KebaktianController::class, 'destroyImage'])->name('kebaktian.images.destroy');
+    Route::put('kebaktian/{kebaktian}/home', [KebaktianController::class, 'updateHome'])->name('kebaktian.home.update');
+    Route::post('kebaktian/{kebaktian}/home-image', [KebaktianController::class, 'storeHomeImage'])->name('kebaktian.home-image.store');
+    Route::delete('kebaktian/{kebaktian}/home-image', [KebaktianController::class, 'destroyHomeImage'])->name('kebaktian.home-image.destroy');
 
     Route::get('event', function () {
         return Inertia::render('event');

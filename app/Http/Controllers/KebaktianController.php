@@ -49,23 +49,11 @@ class KebaktianController extends Controller
             ]);
         }
 
-        $response = cloudinary()->uploadApi()->upload(
-            $request->file('image')->getRealPath(),
-            ['folder' => 'kebaktian/'.$kebaktian->slug]
-        );
-
-        // Store an optimized delivery URL: cap width at 1920px and let Cloudinary
-        // pick the best quality + format (WebP/AVIF). This keeps the delivered
-        // image well under 2MB regardless of how large the upload was.
-        $optimizedUrl = str_replace(
-            '/image/upload/',
-            '/image/upload/c_limit,w_1920,q_auto,f_auto/',
-            $response['secure_url']
-        );
+        $uploaded = $this->uploadOptimized($request->file('image')->getRealPath(), 'kebaktian/'.$kebaktian->slug);
 
         $kebaktian->images()->create([
-            'public_id' => $response['public_id'],
-            'url' => $optimizedUrl,
+            'public_id' => $uploaded['public_id'],
+            'url' => $uploaded['url'],
             'order' => ($kebaktian->images()->max('order') ?? 0) + 1,
         ]);
 
@@ -92,5 +80,69 @@ class KebaktianController extends Controller
         }
 
         return redirect()->route('kebaktian')->with('success', 'Urutan gambar berhasil diperbarui.');
+    }
+
+    public function updateHome(Request $request, Kebaktian $kebaktian)
+    {
+        $validated = $request->validate([
+            'home_subtitle' => 'nullable|string|max:255',
+        ]);
+
+        $kebaktian->update($validated);
+
+        return redirect()->route('kebaktian')->with('success', 'Keterangan tampilan home berhasil diperbarui.');
+    }
+
+    public function storeHomeImage(Request $request, Kebaktian $kebaktian)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp,avif|max:20480',
+        ]);
+
+        // Only one home image per kebaktian: remove the previous one first.
+        if ($kebaktian->home_image_public_id) {
+            cloudinary()->uploadApi()->destroy($kebaktian->home_image_public_id);
+        }
+
+        $uploaded = $this->uploadOptimized($request->file('image')->getRealPath(), 'kebaktian/'.$kebaktian->slug.'/home');
+
+        $kebaktian->update([
+            'home_image_public_id' => $uploaded['public_id'],
+            'home_image_url' => $uploaded['url'],
+        ]);
+
+        return redirect()->route('kebaktian')->with('success', 'Gambar tampilan home berhasil disimpan.');
+    }
+
+    public function destroyHomeImage(Kebaktian $kebaktian)
+    {
+        if ($kebaktian->home_image_public_id) {
+            cloudinary()->uploadApi()->destroy($kebaktian->home_image_public_id);
+        }
+
+        $kebaktian->update([
+            'home_image_public_id' => null,
+            'home_image_url' => null,
+        ]);
+
+        return redirect()->route('kebaktian')->with('success', 'Gambar tampilan home berhasil dihapus.');
+    }
+
+    /**
+     * Upload a file to Cloudinary and return its public id plus an optimized
+     * delivery URL (width-capped, auto quality + format) kept well under 2MB.
+     */
+    private function uploadOptimized(string $path, string $folder): array
+    {
+        $response = cloudinary()->uploadApi()->upload($path, ['folder' => $folder]);
+
+        return [
+            'public_id' => $response['public_id'],
+            'url' => str_replace(
+                '/image/upload/',
+                '/image/upload/c_limit,w_1920,q_auto,f_auto/',
+                $response['secure_url']
+            ),
+        ];
     }
 }

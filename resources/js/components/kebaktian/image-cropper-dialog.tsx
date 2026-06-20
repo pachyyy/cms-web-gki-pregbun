@@ -9,11 +9,12 @@ interface Props {
     open: boolean;
     imageSrc: string | null;
     processing?: boolean;
+    aspect?: number;
     onClose: () => void;
     onCropped: (blob: Blob) => void;
 }
 
-export default function ImageCropperDialog({ open, imageSrc, processing, onClose, onCropped }: Props) {
+export default function ImageCropperDialog({ open, imageSrc, processing, aspect = 4 / 3, onClose, onCropped }: Props) {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [area, setArea] = useState<Area | null>(null);
@@ -36,7 +37,7 @@ export default function ImageCropperDialog({ open, imageSrc, processing, onClose
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Sesuaikan Gambar</DialogTitle>
-                    <DialogDescription>Geser dan perbesar untuk menentukan bagian gambar yang ditampilkan (rasio 4:3).</DialogDescription>
+                    <DialogDescription>Geser dan perbesar untuk menentukan bagian gambar yang ditampilkan.</DialogDescription>
                 </DialogHeader>
 
                 <div className="relative h-72 w-full overflow-hidden rounded-md bg-muted">
@@ -45,7 +46,7 @@ export default function ImageCropperDialog({ open, imageSrc, processing, onClose
                             image={imageSrc}
                             crop={crop}
                             zoom={zoom}
-                            aspect={4 / 3}
+                            aspect={aspect}
                             onCropChange={setCrop}
                             onZoomChange={setZoom}
                             onCropComplete={(_, areaPixels) => setArea(areaPixels)}

@@ -42,7 +42,9 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install and build frontend assets
+ENV APP_ENV=production
 RUN npm install && npm run build
+RUN rm -f public/hot
 
 # Set Laravel storage permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
