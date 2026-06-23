@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\KebaktianController;
 use App\Http\Controllers\PembangunanController;
+use App\Http\Controllers\WartaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,9 +12,11 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    // Dashboard (Warta Jemaat)
+    Route::get('dashboard', [WartaController::class, 'index'])->name('dashboard');
+    Route::post('warta', [WartaController::class, 'store'])->name('warta.store');
+    Route::put('warta/{warta}', [WartaController::class, 'update'])->name('warta.update');
+    Route::delete('warta/{warta}', [WartaController::class, 'destroy'])->name('warta.destroy');
 
     Route::get('user', function () {
         return Inertia::render('user');
@@ -23,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('kepemimpinan');
     })->name('kepemimpinan');
 
+    // Kebaktian Page
     Route::get('kebaktian', [KebaktianController::class, 'index'])->name('kebaktian');
     Route::put('kebaktian/{kebaktian}', [KebaktianController::class, 'update'])->name('kebaktian.update');
     Route::post('kebaktian/{kebaktian}/images', [KebaktianController::class, 'storeImage'])->name('kebaktian.images.store');
@@ -44,14 +48,21 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('komisi');
     })->name('komisi');
 
+    // Pembangunan page
+    Route::get('pembangunan', [PembangunanController::class, 'index'])->name('pembangunan');
+    Route::post('pembangunan', [PembangunanController::class, 'store'])->name('pembangunan.store');
+    Route::delete('pembangunan/{pembangunanUpdate}', [PembangunanController::class, 'destroy'])->name('pembangunan.destroy');
+
+    Route::get('persembahan', function () {
+        return Inertia::render('persembahan');
+    })->name('persembahan');
+
     Route::get('dummy', function () {
         return Inertia::render('dummy');
     })->name('dummy');
 
-    Route::get('pembangunan', [PembangunanController::class, 'index'])->name('pembangunan');
-    Route::post('pembangunan', [PembangunanController::class, 'store'])->name('pembangunan.store');
-    Route::delete('pembangunan/{pembangunanUpdate}', [PembangunanController::class, 'destroy'])->name('pembangunan.destroy');
-});
+
+    });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
