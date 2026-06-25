@@ -57,6 +57,22 @@ return [
             'throw' => false,
         ],
 
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'), // Found in Project Settings > API (anon or service_role)
+            'secret' => env('SUPABASE_STORAGE_SECRET'), // Your main database/project JWT secret
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-southeast-1'), // Check your database region
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', 'cms-media'),
+            'url' => env('SUPABASE_STORAGE_URL'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+        ],
+
+        'cloudinary' => [
+            'driver' => 'cloudinary',
+            'url' => env('CLOUDINARY_URL'),
+        ],
+
     ],
 
     /*
