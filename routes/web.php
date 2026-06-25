@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\KebaktianController;
-use App\Http\Controllers\PembangunanController;
 use App\Http\Controllers\WartaController;
 use App\Http\Controllers\PersembahanController;
 use Illuminate\Support\Facades\Route;
@@ -22,10 +21,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('user', function () {
         return Inertia::render('user');
     })->name('user');
-
-    Route::get('kepemimpinan', function () {
-        return Inertia::render('kepemimpinan');
-    })->name('kepemimpinan');
 
     // Kebaktian Page
     Route::get('kebaktian', [KebaktianController::class, 'index'])->name('kebaktian');
@@ -49,11 +44,6 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('komisi');
     })->name('komisi');
 
-    // Pembangunan page
-    Route::get('pembangunan', [PembangunanController::class, 'index'])->name('pembangunan');
-    Route::post('pembangunan', [PembangunanController::class, 'store'])->name('pembangunan.store');
-    Route::delete('pembangunan/{pembangunanUpdate}', [PembangunanController::class, 'destroy'])->name('pembangunan.destroy');
-
     Route::get('persembahan', function () {
         return Inertia::render('persembahan');
     })->name('persembahan');
@@ -62,8 +52,7 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dummy');
     })->name('dummy');
 
-
-    });
+});
 
 
 Route::middleware(['auth'])->group(function () {
@@ -86,3 +75,5 @@ Route::middleware(['auth'])->group(function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+require __DIR__.'/tentang-kami.php';
+require __DIR__.'/pembangunan.php';
