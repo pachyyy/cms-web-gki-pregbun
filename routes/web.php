@@ -52,10 +52,6 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dummy');
     })->name('dummy');
 
-});
-
-
-Route::middleware(['auth'])->group(function () {
     Route::get('persembahan', [PersembahanController::class, 'index'])->name('persembahan');
     Route::post('persembahan', [PersembahanController::class, 'store'])->name('persembahan.store');
     Route::put('persembahan/{persembahan}', [PersembahanController::class, 'update'])->name('persembahan.update');
@@ -72,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('persembahan-hero-image', [PersembahanController::class, 'destroyHeroImage'])
         ->name('persembahan.hero-image.destroy');
 });
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
