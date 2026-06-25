@@ -10,17 +10,18 @@ export interface GridImage {
     url: string;
 }
 
-function SortableThumb({ image, onDelete }: { image: GridImage; onDelete: (id: number) => void }) {
+function SortableThumb({ image, aspect, onDelete }: { image: GridImage; aspect: string; onDelete: (id: number) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: image.id });
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
+        aspectRatio: aspect,
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="relative aspect-[4/3] overflow-hidden rounded-lg border bg-muted">
+        <div ref={setNodeRef} style={style} className="relative overflow-hidden rounded-lg border bg-muted">
             <img src={image.url} alt="" className="h-full w-full object-cover" />
             <button
                 {...attributes}
@@ -47,10 +48,12 @@ export default function SortableImageGrid({
     images,
     onReorder,
     onDelete,
+    aspect = '4 / 3',
 }: {
     images: GridImage[];
     onReorder: (ids: number[]) => void;
     onDelete: (id: number) => void;
+    aspect?: string;
 }) {
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -83,7 +86,7 @@ export default function SortableImageGrid({
                 <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {items.map((image) => (
-                            <SortableThumb key={image.id} image={image} onDelete={onDelete} />
+                            <SortableThumb key={image.id} image={image} aspect={aspect} onDelete={onDelete} />
                         ))}
                     </div>
                 </SortableContext>

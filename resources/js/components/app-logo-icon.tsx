@@ -1,5 +1,6 @@
+import { cn } from '@/lib/utils';
 import { ImgHTMLAttributes } from 'react';
 
-export default function AppLogoIcon(props: ImgHTMLAttributes<HTMLImageElement>) {
-    return <img src="/images/logo-white.svg" className='invert dark:invert-0' alt="GKI Pregbun" {...props} />;
+export default function AppLogoIcon({ className, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+    return <img src="/images/logo-white.svg" alt="GKI Pregbun" className={cn('invert dark:invert-0', className)} {...props} />;
 }
