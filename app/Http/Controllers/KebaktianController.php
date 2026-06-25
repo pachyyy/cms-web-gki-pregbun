@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kebaktian;
 use App\Models\KebaktianImage;
+use App\Support\CloudinaryImage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -49,7 +50,7 @@ class KebaktianController extends Controller
             ]);
         }
 
-        $uploaded = $this->uploadOptimized($request->file('image')->getRealPath(), 'kebaktian/'.$kebaktian->slug);
+        $uploaded = CloudinaryImage::upload($request->file('image')->getRealPath(), 'kebaktian/'.$kebaktian->slug);
 
         $kebaktian->images()->create([
             'public_id' => $uploaded['public_id'],
@@ -62,7 +63,7 @@ class KebaktianController extends Controller
 
     public function destroyImage(KebaktianImage $image)
     {
-        cloudinary()->uploadApi()->destroy($image->public_id);
+        CloudinaryImage::delete($image->public_id);
         $image->delete();
 
         return redirect()->route('kebaktian')->with('success', 'Gambar berhasil dihapus.');
@@ -100,11 +101,9 @@ class KebaktianController extends Controller
         ]);
 
         // Only one home image per kebaktian: remove the previous one first.
-        if ($kebaktian->home_image_public_id) {
-            cloudinary()->uploadApi()->destroy($kebaktian->home_image_public_id);
-        }
+        CloudinaryImage::delete($kebaktian->home_image_public_id);
 
-        $uploaded = $this->uploadOptimized($request->file('image')->getRealPath(), 'kebaktian/'.$kebaktian->slug.'/home');
+        $uploaded = CloudinaryImage::upload($request->file('image')->getRealPath(), 'kebaktian/'.$kebaktian->slug.'/home');
 
         $kebaktian->update([
             'home_image_public_id' => $uploaded['public_id'],
@@ -116,9 +115,7 @@ class KebaktianController extends Controller
 
     public function destroyHomeImage(Kebaktian $kebaktian)
     {
-        if ($kebaktian->home_image_public_id) {
-            cloudinary()->uploadApi()->destroy($kebaktian->home_image_public_id);
-        }
+        CloudinaryImage::delete($kebaktian->home_image_public_id);
 
         $kebaktian->update([
             'home_image_public_id' => null,
@@ -126,23 +123,5 @@ class KebaktianController extends Controller
         ]);
 
         return redirect()->route('kebaktian')->with('success', 'Gambar tampilan home berhasil dihapus.');
-    }
-
-    /**
-     * Upload a file to Cloudinary and return its public id plus an optimized
-     * delivery URL (width-capped, auto quality + format) kept well under 2MB.
-     */
-    private function uploadOptimized(string $path, string $folder): array
-    {
-        $response = cloudinary()->uploadApi()->upload($path, ['folder' => $folder]);
-
-        return [
-            'public_id' => $response['public_id'],
-            'url' => str_replace(
-                '/image/upload/',
-                '/image/upload/c_limit,w_1920,q_auto,f_auto/',
-                $response['secure_url']
-            ),
-        ];
     }
 }
