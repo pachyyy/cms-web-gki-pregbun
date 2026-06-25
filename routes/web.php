@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\KebaktianController;
 use App\Http\Controllers\WartaController;
+use App\Http\Controllers\PersembahanController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -51,6 +52,25 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dummy');
     })->name('dummy');
 
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('persembahan', [PersembahanController::class, 'index'])->name('persembahan');
+    Route::post('persembahan', [PersembahanController::class, 'store'])->name('persembahan.store');
+    Route::put('persembahan/{persembahan}', [PersembahanController::class, 'update'])->name('persembahan.update');
+    Route::delete('persembahan/{persembahan}', [PersembahanController::class, 'destroy'])->name('persembahan.destroy');
+    Route::put('persembahan-reorder', [PersembahanController::class, 'reorder'])->name('persembahan.reorder');
+
+    Route::post('persembahan/{persembahan}/qr-image', [PersembahanController::class, 'storeQrImage'])
+        ->name('persembahan.qr-image.store');
+    Route::delete('persembahan/{persembahan}/qr-image', [PersembahanController::class, 'destroyQrImage'])
+        ->name('persembahan.qr-image.destroy');
+
+    Route::post('persembahan-hero-image', [PersembahanController::class, 'storeHeroImage'])
+        ->name('persembahan.hero-image.store');
+    Route::delete('persembahan-hero-image', [PersembahanController::class, 'destroyHeroImage'])
+        ->name('persembahan.hero-image.destroy');
 });
 
 require __DIR__.'/settings.php';
