@@ -24,9 +24,11 @@ class PersembahanController extends Controller
         $validated = $request->validated();
         $validated['order'] = (Persembahan::max('order') ?? 0) + 1;
 
-        Persembahan::create($validated);
+        $persembahan = Persembahan::create($validated);
 
-        return redirect()->route('persembahan')->with('success', 'Item persembahan berhasil ditambahkan.');
+        return redirect()->route('persembahan')
+            ->with('success', 'Item persembahan berhasil ditambahkan.')
+            ->with('createdId', $persembahan->id);
     }
 
     public function update(UpdatePersembahanRequest $request, Persembahan $persembahan)
@@ -73,7 +75,7 @@ class PersembahanController extends Controller
 
         $uploaded = $this->uploadOptimized(
             $request->file('image')->getRealPath(),
-            'persembahan/'.$persembahan->slug
+            'persembahan/'.$persembahan->id
         );
 
         $persembahan->update([
