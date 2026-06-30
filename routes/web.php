@@ -3,8 +3,8 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\KebaktianController;
 use App\Http\Controllers\PersembahanController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\WartaController;
+use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
