@@ -12,7 +12,6 @@ import { ChangeEvent, FormEventHandler, useRef, useState } from 'react';
 
 interface PersembahanItem {
     id: number;
-    slug: string;
     title: string;
     entity: string;
     bank: string;

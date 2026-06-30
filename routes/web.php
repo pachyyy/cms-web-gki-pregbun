@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\KebaktianController;
 use App\Http\Controllers\PersembahanController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\WartaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,6 +60,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('persembahan.hero-image.store');
     Route::delete('persembahan-hero-image', [PersembahanController::class, 'destroyHeroImage'])
         ->name('persembahan.hero-image.destroy');
+
+    Route::get('event', [EventController::class, 'index'])->name('event');
+    Route::post('event', [EventController::class, 'store'])->name('event.store');
+    Route::put('event/{event}', [EventController::class, 'update'])->name('event.update');
+    Route::delete('event/{event}', [EventController::class, 'destroy'])->name('event.destroy');
+
+    Route::post('event/{event}/image', [EventController::class, 'storeImage'])->name('event.image.store');
+    Route::delete('event/{event}/image', [EventController::class, 'destroyImage'])->name('event.image.destroy');
+
 });
 
 require __DIR__.'/settings.php';
