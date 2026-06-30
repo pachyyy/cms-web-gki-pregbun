@@ -34,10 +34,14 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
+        $wasForced = $request->user()->must_change_password;
+
         $request->user()->update([
             'password' => Hash::make($validated['password']),
+            'must_change_password' => false,
         ]);
 
-        return back();
+        // A forced user was locked to this page; send them into the app once done.
+        return $wasForced ? redirect()->route('dashboard') : back();
     }
 }

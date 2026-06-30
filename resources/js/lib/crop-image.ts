@@ -35,12 +35,6 @@ export async function getCroppedBlob(imageSrc: string, crop: CropArea, maxWidth 
     canvas.width = Math.round(crop.width * scale);
     canvas.height = Math.round(crop.height * scale);
 
-    // When the user zooms out to fit the whole image, the crop rectangle extends
-    // past the image bounds. JPEG has no transparency, so paint a white backdrop
-    // first to keep those letterbox margins clean instead of black.
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
 

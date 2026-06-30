@@ -1,14 +1,14 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\KebaktianController;
-use App\Http\Controllers\WartaController;
 use App\Http\Controllers\PersembahanController;
+use App\Http\Controllers\WartaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+// Landing page renders the login screen (welcome page is no longer used).
+Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('home');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -17,10 +17,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('warta', [WartaController::class, 'store'])->name('warta.store');
     Route::put('warta/{warta}', [WartaController::class, 'update'])->name('warta.update');
     Route::delete('warta/{warta}', [WartaController::class, 'destroy'])->name('warta.destroy');
-
-    Route::get('user', function () {
-        return Inertia::render('user');
-    })->name('user');
 
     // Kebaktian Page
     Route::get('kebaktian', [KebaktianController::class, 'index'])->name('kebaktian');
@@ -35,10 +31,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('event', function () {
         return Inertia::render('event');
     })->name('event');
-
-    Route::get('pelayanan', function () {
-        return Inertia::render('pelayanan');
-    })->name('pelayanan');
 
     Route::get('komisi', function () {
         return Inertia::render('komisi');
@@ -69,8 +61,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('persembahan.hero-image.destroy');
 });
 
-
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 require __DIR__.'/tentang-kami.php';
 require __DIR__.'/pembangunan.php';
+require __DIR__.'/pelayanan.php';
+require __DIR__.'/user.php';
