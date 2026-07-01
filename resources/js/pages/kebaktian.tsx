@@ -36,7 +36,7 @@ interface Kebaktian {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Kebaktian',
+        title: 'Ibadah',
         href: '/kebaktian',
     },
 ];
@@ -54,8 +54,8 @@ export default function KebaktianPage({ kebaktians, maxImages }: { kebaktians: K
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Kebaktian</h1>
-                    <p className="text-sm text-muted-foreground">Kelola gambar dan informasi untuk tiap jenis kebaktian.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">Ibadah</h1>
+                    <p className="text-sm text-muted-foreground">Kelola gambar dan informasi untuk tiap jenis ibadah.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-1 border-b">

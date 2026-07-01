@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HomeSetting;
 use App\Models\Warta;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -11,8 +12,14 @@ class WartaController extends Controller
 {
     public function index()
     {
+        $home = HomeSetting::current();
+
         return Inertia::render('dashboard', [
             'warta' => Warta::orderByDesc('service_date')->get(),
+            'homeVideo' => [
+                'ratio_16x9_url' => $home->video_16x9_url,
+                'ratio_4x3_url' => $home->video_4x3_url,
+            ],
         ]);
     }
 
