@@ -23,7 +23,7 @@ const mainNavItems: NavItem[] = [
         icon: UsersRound,
     },
     {
-        title: 'Kebaktian',
+        title: 'Ibadah',
         url: '/kebaktian',
         icon: Church,
     },
@@ -52,11 +52,11 @@ const mainNavItems: NavItem[] = [
         url: '/persembahan',
         icon: HandCoins,
     },
-    {
-        title: 'Dummy',
-        url: '/dummy',
-        icon: Ban,
-    },
+    // {
+    //     title: 'Dummy',
+    //     url: '/dummy',
+    //     icon: Ban,
+    // },
 ];
 
 // const footerNavItems: NavItem[] = [

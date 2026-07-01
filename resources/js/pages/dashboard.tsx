@@ -10,8 +10,8 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { format, parse } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { Pencil, Plus, Trash2, Upload } from 'lucide-react';
+import { ChangeEvent, FormEventHandler, useRef, useState } from 'react';
 
 interface Warta {
     id: number;
@@ -20,6 +20,13 @@ interface Warta {
     source_url: string | null;
     url: string;
 }
+
+interface HomeVideo {
+    ratio_16x9_url: string | null;
+    ratio_4x3_url: string | null;
+}
+
+const MAX_VIDEO_MB = 25;
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -38,7 +45,7 @@ function nextSunday(): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function Dashboard({ warta }: { warta: Warta[] }) {
+export default function Dashboard({ warta, homeVideo }: { warta: Warta[]; homeVideo: HomeVideo }) {
     const [dialog, setDialog] = useState<{ open: boolean; record: Warta | null }>({ open: false, record: null });
 
     const close = () => setDialog({ open: false, record: null });
@@ -111,6 +118,11 @@ export default function Dashboard({ warta }: { warta: Warta[] }) {
             </div>
 
             <WartaDialog key={dialog.open ? (dialog.record?.id ?? 'new') : 'closed'} open={dialog.open} record={dialog.record} onClose={close} />
+
+            {/* For uploading Home Video */}
+            <div className="px-4 pb-4">
+                <HomeVideoSection homeVideo={homeVideo} />
+            </div>
         </AppLayout>
     );
 }
@@ -183,5 +195,95 @@ function WartaDialog({ open, record, onClose }: { open: boolean; record: Warta |
                 </form>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function HomeVideoSection({ homeVideo }: { homeVideo: HomeVideo }) {
+    return (
+        <Card>
+            <CardContent className="space-y-4 p-6">
+                <div>
+                    <h2 className="text-lg font-semibold">Video Home</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Unggah video untuk halaman utama. Maksimal {MAX_VIDEO_MB}MB (MP4, MOV, atau WebM). Mengunggah video baru akan menggantikan
+                        yang lama.
+                    </p>
+                </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                    <VideoSlot label="Rasio 16:9" ratio="16x9" url={homeVideo.ratio_16x9_url} aspectClass="aspect-video" />
+                    <VideoSlot label="Rasio 4:3" ratio="4x3" url={homeVideo.ratio_4x3_url} aspectClass="aspect-[4/3]" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function VideoSlot({ label, ratio, url, aspectClass }: { label: string; ratio: '16x9' | '4x3'; url: string | null; aspectClass: string }) {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const onPick = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+            setError(`Ukuran video maksimal ${MAX_VIDEO_MB}MB.`);
+            return;
+        }
+        setError(null);
+        setUploading(true);
+        router.post(
+            route('home-video.store', ratio),
+            { video: file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onError: (errs) => setError(errs.video ?? 'Gagal mengunggah video.'),
+                onFinish: () => setUploading(false),
+            },
+        );
+    };
+
+    const remove = () => {
+        if (confirm('Hapus video ini?')) {
+            router.delete(route('home-video.destroy', ratio), { preserveScroll: true });
+        }
+    };
+
+    return (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <Label>{label}</Label>
+                {url && (
+                    <Button type="button" variant="ghost" size="sm" onClick={remove}>
+                        <Trash2 className="h-4 w-4 text-destructive" /> Hapus
+                    </Button>
+                )}
+            </div>
+
+            <div className={`${aspectClass} w-full overflow-hidden rounded-lg border bg-muted`}>
+                {url ? (
+                    <video src={url} controls className="h-full w-full bg-black object-contain" />
+                ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Belum ada video</div>
+                )}
+            </div>
+
+            <div className="flex items-center gap-3">
+                <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={uploading}>
+                    <Upload className="h-4 w-4" /> {uploading ? 'Mengunggah...' : url ? 'Ubah Video' : 'Unggah Video'}
+                </Button>
+            </div>
+
+            <input
+                ref={inputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm"
+                className="hidden"
+                onChange={onPick}
+            />
+            <InputError message={error ?? undefined} />
+        </div>
     );
 }

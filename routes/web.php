@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\HomeVideoController;
 use App\Http\Controllers\KebaktianController;
 use App\Http\Controllers\PersembahanController;
 use App\Http\Controllers\WartaController;
-use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,6 +19,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('warta', [WartaController::class, 'store'])->name('warta.store');
     Route::put('warta/{warta}', [WartaController::class, 'update'])->name('warta.update');
     Route::delete('warta/{warta}', [WartaController::class, 'destroy'])->name('warta.destroy');
+
+    // Home page hero videos (16:9 / 4:3) uploaded to Cloudinary.
+    Route::post('dashboard/home-video/{ratio}', [HomeVideoController::class, 'store'])
+        ->whereIn('ratio', ['16x9', '4x3'])->name('home-video.store');
+    Route::delete('dashboard/home-video/{ratio}', [HomeVideoController::class, 'destroy'])
+        ->whereIn('ratio', ['16x9', '4x3'])->name('home-video.destroy');
 
     // Kebaktian Page
     Route::get('kebaktian', [KebaktianController::class, 'index'])->name('kebaktian');
