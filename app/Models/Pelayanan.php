@@ -10,16 +10,20 @@ class Pelayanan extends Model
     protected $table = 'pelayanan';
 
     protected $fillable = [
+        'slug',
         'title',
         'subtitle',
         'description',
-        'image_public_id',
-        'image_url',
         'order',
     ];
 
     public function details(): HasMany
     {
         return $this->hasMany(PelayananDetail::class)->orderBy('order');
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(PelayananImage::class)->orderBy('order');
     }
 }
