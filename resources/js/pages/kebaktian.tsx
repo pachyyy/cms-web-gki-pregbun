@@ -274,7 +274,7 @@ function KebaktianEditor({ kebaktian, maxImages }: { kebaktian: Kebaktian; maxIm
                     </p>
 
                     {kebaktian.images.length > 0 ? (
-                        <SortableImageGrid images={kebaktian.images} onReorder={reorder} onDelete={deleteImage} />
+                        <SortableImageGrid images={kebaktian.images} onReorder={reorder} onDelete={deleteImage} aspect="16 / 9" />
                     ) : (
                         <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
                             Belum ada gambar.
@@ -375,6 +375,7 @@ function KebaktianEditor({ kebaktian, maxImages }: { kebaktian: Kebaktian; maxIm
             <ImageCropperDialog
                 open={cropSrc !== null}
                 imageSrc={cropSrc}
+                aspect={16 / 9}
                 processing={uploading}
                 onClose={() => setCropSrc(null)}
                 onCropped={onCropped}

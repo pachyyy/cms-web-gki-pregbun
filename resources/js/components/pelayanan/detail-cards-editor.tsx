@@ -49,10 +49,10 @@ function SortableCard({ row, onChange, onRemove }: { row: Row; onChange: (key: s
             >
                 <GripVertical className="h-5 w-5" />
             </button>
-            <div className="grid flex-1 items-start gap-2 sm:grid-cols-[10rem_1fr]">
+            <div className="grid flex-1 items-start gap-2 sm:grid-cols-[20rem_1fr]">
                 <Input placeholder="LABEL (mis. KONSELOR)" value={row.label} onChange={(e) => onChange(row.key, 'label', e.target.value)} />
                 <textarea
-                    placeholder="Isi (mis. Ibu Enny Dewi...)"
+                    placeholder="Isi deskripsi kartu..."
                     rows={2}
                     value={row.value}
                     onChange={(e) => onChange(row.key, 'value', e.target.value)}
