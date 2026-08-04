@@ -8,81 +8,18 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { ImagePlus, Plus, Trash2 } from 'lucide-react';
-import { ChangeEvent, FormEventHandler, useRef, useState } from 'react';
+import { ChangeEvent, FormEventHandler, useMemo, useRef, useState } from 'react';
 
 const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
-/**
- * Schedule is still a free-text field underneath (parsed by
- * getEventType()/nextOccurrence() on the public site). Checking "Setiap"
- * switches to picking a day from a dropdown and writes "Setiap <Hari>" as
- * the value; the text input is disabled while that's active so there's
- * only one way to edit the value at a time. Unchecking re-enables the text
- * input and clears the value back to free text.
- */
-function ScheduleField({
-    id,
-    value,
-    onChange,
-    error,
-}: {
-    id: string;
-    value: string;
-    onChange: (value: string) => void;
-    error?: string;
-}) {
-    const isRecurring = value.startsWith('Setiap ');
-    const selectedDay = isRecurring ? value.replace(/^Setiap\s*/, '') : '';
-
-    const toggleRecurring = (checked: boolean) => {
-        onChange(checked ? `Setiap ${DAYS[0]}` : '');
-    };
-
-    return (
-        <div className="grid gap-2">
-            <div className="flex items-center gap-2">
-                <input
-                    id={`${id}_recurring`}
-                    type="checkbox"
-                    checked={isRecurring}
-                    onChange={(e) => toggleRecurring(e.target.checked)}
-                    className="h-4 w-4 rounded border-input"
-                />
-                <label htmlFor={`${id}_recurring`} className="text-xs text-muted-foreground">
-                    Setiap (kegiatan rutin mingguan)
-                </label>
-            </div>
-
-            {isRecurring && (
-                <select
-                    value={selectedDay}
-                    onChange={(e) => onChange(`Setiap ${e.target.value}`)}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
-                >
-                    {DAYS.map((day) => (
-                        <option key={day} value={day}>
-                            {day}
-                        </option>
-                    ))}
-                </select>
-            )}
-
-            <Input
-                id={id}
-                placeholder="30 Maret 2026"
-                value={isRecurring ? `Setiap ${selectedDay}` : value}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={isRecurring}
-            />
-            <InputError message={error} />
-        </div>
-    );
-}
+const isRecurring = (item: Pick<EventItem, 'schedule' | 'day'>) =>
+    Boolean(item.day) || item.schedule.trim().startsWith('Setiap ');
 
 interface EventItem {
     id: number;
     title: string;
     schedule: string;
+    day: string | null;
     time: string;
     location: string;
     description: string;
@@ -101,7 +38,23 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EventsPage({ event }: { event: EventItem[] }) {
-    const [showCreate, setShowCreate] = useState(false);
+    const [showCreateRutin, setShowCreateRutin] = useState(false);
+    const [showCreateKhusus, setShowCreateKhusus] = useState(false);
+    const [dayFilter, setDayFilter] = useState<string>('Semua');
+
+    const { rutin, khusus } = useMemo(() => {
+        const rutin: EventItem[] = [];
+        const khusus: EventItem[] = [];
+        for (const item of event) {
+            (isRecurring(item) ? rutin : khusus).push(item);
+        }
+        return { rutin, khusus };
+    }, [event]);
+
+    const filteredRutin = useMemo(() => {
+        if (dayFilter === 'Semua') return rutin;
+        return rutin.filter((item) => (item.day ?? item.schedule.replace(/^Setiap\s*/, '')) === dayFilter);
+    }, [rutin, dayFilter]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -115,31 +68,78 @@ export default function EventsPage({ event }: { event: EventItem[] }) {
                     </p>
                 </div>
 
+                {/* ───────────── RUTIN MINGGUAN ───────────── */}
                 <Card>
                     <CardContent className="space-y-4 p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="font-semibold">Daftar Kegiatan ({event.length})</h2>
-                            <Button type="button" size="sm" onClick={() => setShowCreate((v) => !v)}>
-                                <Plus className="h-4 w-4" /> Tambah Kegiatan
+                            <div>
+                                <h2 className="font-semibold">Rutin Mingguan ({rutin.length})</h2>
+                                <p className="text-sm text-muted-foreground">Kegiatan yang berulang setiap minggu pada hari tertentu.</p>
+                            </div>
+                            <Button type="button" size="sm" onClick={() => setShowCreateRutin((v) => !v)}>
+                                <Plus className="h-4 w-4" /> Tambah Kegiatan Rutin
                             </Button>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            Kolom "Jadwal" menentukan apakah kegiatan dianggap rutin atau spesial: jika berisi tahun
-                            (misal "30 Maret 2026"), dianggap kegiatan spesial. Jika berisi nama hari (misal "Setiap
-                            Minggu"), dianggap kegiatan rutin.
-                        </p>
 
-                        {showCreate && <CreateEventForm onDone={() => setShowCreate(false)} />}
+                        {showCreateRutin && <CreateRutinForm onDone={() => setShowCreateRutin(false)} />}
 
-                        {event.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                            {['Semua', ...DAYS].map((day) => (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => setDayFilter(day)}
+                                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                                        dayFilter === day
+                                            ? 'border-primary bg-primary text-primary-foreground'
+                                            : 'border-input bg-background text-foreground hover:bg-secondary'
+                                    }`}
+                                >
+                                    {day}
+                                </button>
+                            ))}
+                        </div>
+
+                        {filteredRutin.length > 0 ? (
                             <div className="divide-y rounded-lg border">
-                                {event.map((item) => (
-                                    <EventRow key={item.id} item={item} />
+                                {filteredRutin.map((item) => (
+                                    <EventRow key={item.id} item={item} variant="rutin" />
                                 ))}
                             </div>
                         ) : (
                             <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
-                                Belum ada kegiatan.
+                                {rutin.length === 0
+                                    ? 'Belum ada kegiatan rutin.'
+                                    : `Tidak ada kegiatan pada hari ${dayFilter}.`}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* ───────────── EVENT SPESIAL ───────────── */}
+                <Card>
+                    <CardContent className="space-y-4 p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="font-semibold">Event Spesial ({khusus.length})</h2>
+                                <p className="text-sm text-muted-foreground">Kegiatan satu kali atau musiman dengan tanggal tertentu.</p>
+                            </div>
+                            <Button type="button" size="sm" onClick={() => setShowCreateKhusus((v) => !v)}>
+                                <Plus className="h-4 w-4" /> Tambah Event Spesial
+                            </Button>
+                        </div>
+
+                        {showCreateKhusus && <CreateKhususForm onDone={() => setShowCreateKhusus(false)} />}
+
+                        {khusus.length > 0 ? (
+                            <div className="divide-y rounded-lg border">
+                                {khusus.map((item) => (
+                                    <EventRow key={item.id} item={item} variant="khusus" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+                                Belum ada event spesial.
                             </div>
                         )}
                     </CardContent>
@@ -149,22 +149,8 @@ export default function EventsPage({ event }: { event: EventItem[] }) {
     );
 }
 
-function CreateEventForm({ onDone }: { onDone: () => void }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        title: '',
-        schedule: '',
-        time: '',
-        location: '',
-        description: '',
-        details: '',
-        contact: '',
-        category: '',
-    });
-
-    // Same pattern as the persembahan QR upload: the event needs to exist
-    // (have an id) before an image can be attached, so we stage the cropped
-    // blob locally and upload it right after the create succeeds, using the
-    // id the controller flashes back via with('createdId', ...).
+/** Shared image-picker state + handlers used by both create forms. */
+function useImageStaging() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [cropSrc, setCropSrc] = useState<string | null>(null);
     const [imageBlob, setImageBlob] = useState<Blob | null>(null);
@@ -188,13 +174,64 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
         setImagePreviewUrl(null);
     };
 
+    return { fileInputRef, cropSrc, setCropSrc, imageBlob, imagePreviewUrl, uploading, setUploading, onPickFile, onCropped, removeImage };
+}
+
+function ImagePickerField({ staging }: { staging: ReturnType<typeof useImageStaging> }) {
+    const { fileInputRef, imagePreviewUrl, onPickFile, removeImage } = staging;
+    return (
+        <div className="grid gap-2 md:col-span-2">
+            <Label>Gambar (opsional)</Label>
+            <div className="flex items-center gap-4">
+                <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-lg border bg-muted">
+                    {imagePreviewUrl ? (
+                        <img src={imagePreviewUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                        <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Belum ada</div>
+                    )}
+                </div>
+                <div className="flex gap-2">
+                    <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                        <ImagePlus className="h-4 w-4" /> {imagePreviewUrl ? 'Ubah' : 'Pilih Gambar'}
+                    </Button>
+                    {imagePreviewUrl && (
+                        <Button type="button" size="sm" variant="outline" onClick={removeImage}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onPickFile} />
+        </div>
+    );
+}
+
+function CreateRutinForm({ onDone }: { onDone: () => void }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        title: '',
+        day: DAYS[0],
+        schedule: `Setiap ${DAYS[0]}`,
+        time: '',
+        location: '',
+        description: '',
+        details: '',
+        contact: '',
+        category: '',
+    });
+
+    const staging = useImageStaging();
+    const { imageBlob, setUploading } = staging;
+
+    const onDayChange = (day: string) => {
+        setData((prev) => ({ ...prev, day, schedule: `Setiap ${day}` }));
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('event.store'), {
             preserveScroll: true,
             onSuccess: (page) => {
                 const createdId = (page.props as { createdId?: number }).createdId;
-
                 reset();
 
                 if (imageBlob && createdId) {
@@ -208,8 +245,7 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
                             preserveScroll: true,
                             onFinish: () => {
                                 setUploading(false);
-                                setImageBlob(null);
-                                setImagePreviewUrl(null);
+                                staging.removeImage();
                                 onDone();
                             },
                         },
@@ -224,23 +260,40 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
     return (
         <form onSubmit={submit} className="grid gap-3 rounded-lg border p-4 md:grid-cols-2">
             <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="title">Judul</Label>
-                <Input id="title" placeholder="Kebaktian Paskah" value={data.title} onChange={(e) => setData('title', e.target.value)} />
+                <Label htmlFor="rutin_title">Judul</Label>
+                <Input
+                    id="rutin_title"
+                    placeholder="Ibadah Umum I"
+                    value={data.title}
+                    onChange={(e) => setData('title', e.target.value)}
+                />
                 <InputError message={errors.title} />
             </div>
             <div className="grid gap-2">
-                <Label htmlFor="schedule">Jadwal</Label>
-                <ScheduleField id="schedule" value={data.schedule} onChange={(v) => setData('schedule', v)} error={errors.schedule} />
+                <Label htmlFor="rutin_day">Hari</Label>
+                <select
+                    id="rutin_day"
+                    value={data.day}
+                    onChange={(e) => onDayChange(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                >
+                    {DAYS.map((day) => (
+                        <option key={day} value={day}>
+                            {day}
+                        </option>
+                    ))}
+                </select>
+                <InputError message={errors.day} />
             </div>
             <div className="grid gap-2">
-                <Label htmlFor="time">Jam</Label>
-                <Input id="time" placeholder="07.30" value={data.time} onChange={(e) => setData('time', e.target.value)} />
+                <Label htmlFor="rutin_time">Jam</Label>
+                <Input id="rutin_time" placeholder="07.30" value={data.time} onChange={(e) => setData('time', e.target.value)} />
                 <InputError message={errors.time} />
             </div>
             <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="location">Lokasi</Label>
+                <Label htmlFor="rutin_location">Lokasi</Label>
                 <Input
-                    id="location"
+                    id="rutin_location"
                     placeholder="Gedung Gereja"
                     value={data.location}
                     onChange={(e) => setData('location', e.target.value)}
@@ -248,24 +301,24 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
                 <InputError message={errors.location} />
             </div>
             <div className="grid gap-2">
-                <Label htmlFor="category">Kategori</Label>
+                <Label htmlFor="rutin_category">Kategori</Label>
                 <Input
-                    id="category"
-                    placeholder="ibadah / persekutuan / musik / olahraga / pelayanan / khusus"
+                    id="rutin_category"
+                    placeholder="ibadah / persekutuan / musik / olahraga / pelayanan"
                     value={data.category}
                     onChange={(e) => setData('category', e.target.value)}
                 />
                 <InputError message={errors.category} />
             </div>
             <div className="grid gap-2">
-                <Label htmlFor="contact">Kontak (opsional)</Label>
-                <Input id="contact" value={data.contact} onChange={(e) => setData('contact', e.target.value)} />
+                <Label htmlFor="rutin_contact">Kontak (opsional)</Label>
+                <Input id="rutin_contact" value={data.contact} onChange={(e) => setData('contact', e.target.value)} />
                 <InputError message={errors.contact} />
             </div>
             <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="description">Deskripsi</Label>
+                <Label htmlFor="rutin_description">Deskripsi</Label>
                 <textarea
-                    id="description"
+                    id="rutin_description"
                     rows={3}
                     value={data.description}
                     onChange={(e) => setData('description', e.target.value)}
@@ -274,9 +327,9 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
                 <InputError message={errors.description} />
             </div>
             <div className="grid gap-2 md:col-span-2">
-                <Label htmlFor="details">Detail tambahan (opsional)</Label>
+                <Label htmlFor="rutin_details">Detail tambahan (opsional)</Label>
                 <textarea
-                    id="details"
+                    id="rutin_details"
                     rows={3}
                     value={data.details}
                     onChange={(e) => setData('details', e.target.value)}
@@ -285,33 +338,11 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
                 <InputError message={errors.details} />
             </div>
 
-            <div className="grid gap-2 md:col-span-2">
-                <Label>Gambar (opsional)</Label>
-                <div className="flex items-center gap-4">
-                    <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded-lg border bg-muted">
-                        {imagePreviewUrl ? (
-                            <img src={imagePreviewUrl} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                            <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Belum ada</div>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                        <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                            <ImagePlus className="h-4 w-4" /> {imagePreviewUrl ? 'Ubah' : 'Pilih Gambar'}
-                        </Button>
-                        {imagePreviewUrl && (
-                            <Button type="button" size="sm" variant="outline" onClick={removeImage}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
-                </div>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onPickFile} />
-            </div>
+            <ImagePickerField staging={staging} />
 
             <div className="flex items-center gap-3 md:col-span-2">
-                <Button type="submit" size="sm" disabled={processing || uploading}>
-                    {uploading ? 'Mengunggah gambar...' : 'Simpan'}
+                <Button type="submit" size="sm" disabled={processing || staging.uploading}>
+                    {staging.uploading ? 'Mengunggah gambar...' : 'Simpan'}
                 </Button>
                 <Button type="button" size="sm" variant="outline" onClick={onDone}>
                     Batal
@@ -319,22 +350,167 @@ function CreateEventForm({ onDone }: { onDone: () => void }) {
             </div>
 
             <ImageCropperDialog
-                open={cropSrc !== null}
-                imageSrc={cropSrc}
+                open={staging.cropSrc !== null}
+                imageSrc={staging.cropSrc}
                 aspect={16 / 9}
                 processing={false}
-                onClose={() => setCropSrc(null)}
-                onCropped={onCropped}
+                onClose={() => staging.setCropSrc(null)}
+                onCropped={staging.onCropped}
             />
         </form>
     );
 }
 
-function EventRow({ item }: { item: EventItem }) {
+function CreateKhususForm({ onDone }: { onDone: () => void }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        title: '',
+        schedule: '',
+        time: '',
+        location: '',
+        description: '',
+        details: '',
+        contact: '',
+        category: '',
+    });
+
+    const staging = useImageStaging();
+    const { imageBlob, setUploading } = staging;
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route('event.store'), {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const createdId = (page.props as { createdId?: number }).createdId;
+                reset();
+
+                if (imageBlob && createdId) {
+                    setUploading(true);
+                    const file = new File([imageBlob], 'event.jpg', { type: 'image/jpeg' });
+                    router.post(
+                        route('event.image.store', createdId),
+                        { image: file },
+                        {
+                            forceFormData: true,
+                            preserveScroll: true,
+                            onFinish: () => {
+                                setUploading(false);
+                                staging.removeImage();
+                                onDone();
+                            },
+                        },
+                    );
+                } else {
+                    onDone();
+                }
+            },
+        });
+    };
+
+    return (
+        <form onSubmit={submit} className="grid gap-3 rounded-lg border p-4 md:grid-cols-2">
+            <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="khusus_title">Judul</Label>
+                <Input
+                    id="khusus_title"
+                    placeholder="Kebaktian Paskah"
+                    value={data.title}
+                    onChange={(e) => setData('title', e.target.value)}
+                />
+                <InputError message={errors.title} />
+            </div>
+            <div className="grid gap-2">
+                <Label htmlFor="khusus_schedule">Jadwal</Label>
+                <Input
+                    id="khusus_schedule"
+                    placeholder="30 Maret 2026"
+                    value={data.schedule}
+                    onChange={(e) => setData('schedule', e.target.value)}
+                />
+                <InputError message={errors.schedule} />
+            </div>
+            <div className="grid gap-2">
+                <Label htmlFor="khusus_time">Jam</Label>
+                <Input id="khusus_time" placeholder="07.30" value={data.time} onChange={(e) => setData('time', e.target.value)} />
+                <InputError message={errors.time} />
+            </div>
+            <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="khusus_location">Lokasi</Label>
+                <Input
+                    id="khusus_location"
+                    placeholder="Gedung Gereja"
+                    value={data.location}
+                    onChange={(e) => setData('location', e.target.value)}
+                />
+                <InputError message={errors.location} />
+            </div>
+            <div className="grid gap-2">
+                <Label htmlFor="khusus_category">Kategori</Label>
+                <Input
+                    id="khusus_category"
+                    placeholder="khusus"
+                    value={data.category}
+                    onChange={(e) => setData('category', e.target.value)}
+                />
+                <InputError message={errors.category} />
+            </div>
+            <div className="grid gap-2">
+                <Label htmlFor="khusus_contact">Kontak (opsional)</Label>
+                <Input id="khusus_contact" value={data.contact} onChange={(e) => setData('contact', e.target.value)} />
+                <InputError message={errors.contact} />
+            </div>
+            <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="khusus_description">Deskripsi</Label>
+                <textarea
+                    id="khusus_description"
+                    rows={3}
+                    value={data.description}
+                    onChange={(e) => setData('description', e.target.value)}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden"
+                />
+                <InputError message={errors.description} />
+            </div>
+            <div className="grid gap-2 md:col-span-2">
+                <Label htmlFor="khusus_details">Detail tambahan (opsional)</Label>
+                <textarea
+                    id="khusus_details"
+                    rows={3}
+                    value={data.details}
+                    onChange={(e) => setData('details', e.target.value)}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden"
+                />
+                <InputError message={errors.details} />
+            </div>
+
+            <ImagePickerField staging={staging} />
+
+            <div className="flex items-center gap-3 md:col-span-2">
+                <Button type="submit" size="sm" disabled={processing || staging.uploading}>
+                    {staging.uploading ? 'Mengunggah gambar...' : 'Simpan'}
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={onDone}>
+                    Batal
+                </Button>
+            </div>
+
+            <ImageCropperDialog
+                open={staging.cropSrc !== null}
+                imageSrc={staging.cropSrc}
+                aspect={16 / 9}
+                processing={false}
+                onClose={() => staging.setCropSrc(null)}
+                onCropped={staging.onCropped}
+            />
+        </form>
+    );
+}
+
+function EventRow({ item, variant }: { item: EventItem; variant: 'rutin' | 'khusus' }) {
     const [expanded, setExpanded] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         title: item.title,
         schedule: item.schedule,
+        day: item.day ?? DAYS[0],
         time: item.time,
         location: item.location,
         description: item.description,
@@ -346,6 +522,10 @@ function EventRow({ item }: { item: EventItem }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [cropSrc, setCropSrc] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
+
+    const onDayChange = (day: string) => {
+        setData((prev) => ({ ...prev, day, schedule: `Setiap ${day}` }));
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -396,7 +576,7 @@ function EventRow({ item }: { item: EventItem }) {
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{item.title}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                        {item.schedule} · {item.time} · {item.category}
+                        {variant === 'rutin' ? item.day ?? item.schedule : item.schedule} · {item.time} · {item.category}
                     </p>
                 </div>
                 <Button type="button" size="sm" variant="outline" onClick={() => setExpanded((v) => !v)}>
@@ -412,15 +592,37 @@ function EventRow({ item }: { item: EventItem }) {
                             <Input id={`title_${item.id}`} value={data.title} onChange={(e) => setData('title', e.target.value)} />
                             <InputError message={errors.title} />
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor={`schedule_${item.id}`}>Jadwal</Label>
-                            <ScheduleField
-                                id={`schedule_${item.id}`}
-                                value={data.schedule}
-                                onChange={(v) => setData('schedule', v)}
-                                error={errors.schedule}
-                            />
-                        </div>
+
+                        {variant === 'rutin' ? (
+                            <div className="grid gap-2">
+                                <Label htmlFor={`day_${item.id}`}>Hari</Label>
+                                <select
+                                    id={`day_${item.id}`}
+                                    value={data.day}
+                                    onChange={(e) => onDayChange(e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                                >
+                                    {DAYS.map((day) => (
+                                        <option key={day} value={day}>
+                                            {day}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.day} />
+                            </div>
+                        ) : (
+                            <div className="grid gap-2">
+                                <Label htmlFor={`schedule_${item.id}`}>Jadwal</Label>
+                                <Input
+                                    id={`schedule_${item.id}`}
+                                    placeholder="30 Maret 2026"
+                                    value={data.schedule}
+                                    onChange={(e) => setData('schedule', e.target.value)}
+                                />
+                                <InputError message={errors.schedule} />
+                            </div>
+                        )}
+
                         <div className="grid gap-2">
                             <Label htmlFor={`time_${item.id}`}>Jam</Label>
                             <Input id={`time_${item.id}`} value={data.time} onChange={(e) => setData('time', e.target.value)} />
