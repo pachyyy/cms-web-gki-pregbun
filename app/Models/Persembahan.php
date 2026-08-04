@@ -15,7 +15,7 @@ class Persembahan extends Model
      * that creates a Persembahan — controller, tinker, a future seeder —
      * is protected the same way.
      */
-    public const MAX_ITEMS = 3;
+    public const MAX_ITEMS = 4;
 
     protected $fillable = [
         'slug',

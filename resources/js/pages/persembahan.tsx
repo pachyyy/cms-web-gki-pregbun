@@ -46,6 +46,8 @@ export default function PersembahanPage({ items, heroImageUrl }: { items: Persem
                 <HeroImageEditor heroImageUrl={heroImageUrl} />
 
                 <ItemsManager items={items} />
+
+                <ItemsManagerPembangunan items={items} />
             </div>
         </AppLayout>
     );
@@ -132,23 +134,91 @@ function ItemsManager({ items }: { items: PersembahanItem[] }) {
         router.put(route('persembahan.reorder'), { ids }, { preserveScroll: true });
     };
 
+    const filteredItems = items.filter(item => item.title !== "Pembangunan");
+
     return (
         <Card>
             <CardContent className="space-y-4 p-6">
                 <div className="flex items-center justify-between">
-                    <h2 className="font-semibold">Daftar Item ({items.length})</h2>
-                    <Button type="button" size="sm" onClick={() => setShowCreate((v) => !v)}>
+                    <h2 className="font-semibold">
+                        Daftar Item ({filteredItems.length})
+                    </h2>
+
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setShowCreate(v => !v)}
+                    >
                         <Plus className="h-4 w-4" /> Tambah Item
                     </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">Seret untuk mengatur urutan tampil di halaman publik.</p>
 
-                {showCreate && <CreatePersembahanForm onDone={() => setShowCreate(false)} />}
+                <p className="text-sm text-muted-foreground">
+                    Seret untuk mengatur urutan tampil di halaman publik.
+                </p>
 
-                {items.length > 0 ? (
-                    <SortablePersembahanList items={items} onReorder={reorder} />
+                {showCreate && (
+                    <CreatePersembahanForm onDone={() => setShowCreate(false)} />
+                )}
+
+                {filteredItems.length > 0 ? (
+                    <SortablePersembahanList
+                        items={filteredItems}
+                        onReorder={reorder}
+                    />
                 ) : (
-                    <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">Belum ada item.</div>
+                    <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+                        Belum ada item.
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function ItemsManagerPembangunan({ items }: { items: PersembahanItem[] }) {
+    const [showCreate, setShowCreate] = useState(false);
+
+    const reorder = (ids: number[]) => {
+        router.put(route('persembahan.reorder'), { ids }, { preserveScroll: true });
+    };
+
+    const filteredItems = items.filter(item => item.title == "Pembangunan");
+
+    return (
+        <Card>
+            <CardContent className="space-y-4 p-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="font-semibold">
+                        Pembangunan
+                    </h2>
+
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setShowCreate(v => !v)}
+                    >
+                        <Plus className="h-4 w-4" /> Tambah Item
+                    </Button>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                    Seret untuk mengatur urutan tampil di halaman publik.
+                </p>
+
+                {showCreate && (
+                    <CreatePersembahanForm onDone={() => setShowCreate(false)} />
+                )}
+
+                {filteredItems.length > 0 ? (
+                    <SortablePersembahanList
+                        items={filteredItems}
+                        onReorder={reorder}
+                    />
+                ) : (
+                    <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+                        Belum ada item.
+                    </div>
                 )}
             </CardContent>
         </Card>
