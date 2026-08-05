@@ -17,4 +17,11 @@ return new class extends Migration
             $table->string('day')->nullable()->after('schedule');
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('events', function (Blueprint $table) {
+            $table->dropColumn('day');
+        });
+    }
 };
