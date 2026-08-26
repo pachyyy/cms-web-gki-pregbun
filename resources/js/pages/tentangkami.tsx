@@ -29,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const ASPECT = 4 / 5;
 
-export default function TentangKami({ hambaTuhan, descriptionMax }: { hambaTuhan: HambaTuhan[]; descriptionMax: number }) {
+export default function TentangKami({ hambaTuhan }: { hambaTuhan: HambaTuhan[] }) {
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [adding, setAdding] = useState(false);
 
@@ -79,14 +79,9 @@ export default function TentangKami({ hambaTuhan, descriptionMax }: { hambaTuhan
                     <Card>
                         <CardContent className="p-6">
                             {adding ? (
-                                <PastorNewForm descriptionMax={descriptionMax} onDone={() => setAdding(false)} />
+                                <PastorNewForm onDone={() => setAdding(false)} />
                             ) : selected ? (
-                                <PastorEditForm
-                                    key={selected.id}
-                                    pastor={selected}
-                                    descriptionMax={descriptionMax}
-                                    onDeleted={() => setSelectedId(null)}
-                                />
+                                <PastorEditForm key={selected.id} pastor={selected} onDeleted={() => setSelectedId(null)} />
                             ) : (
                                 <div className="flex h-full min-h-48 items-center justify-center text-center text-sm text-muted-foreground">
                                     Pilih hamba Tuhan di sebelah kiri untuk mengubah, atau klik &ldquo;Tambah Hamba Tuhan&rdquo;.
@@ -100,7 +95,7 @@ export default function TentangKami({ hambaTuhan, descriptionMax }: { hambaTuhan
     );
 }
 
-function PastorNewForm({ descriptionMax, onDone }: { descriptionMax: number; onDone: () => void }) {
+function PastorNewForm({ onDone }: { onDone: () => void }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         description: '',
@@ -146,7 +141,6 @@ function PastorNewForm({ descriptionMax, onDone }: { descriptionMax: number; onD
             <NameDescriptionFields
                 name={data.name}
                 description={data.description}
-                descriptionMax={descriptionMax}
                 onName={(v) => setData('name', v)}
                 onDescription={(v) => setData('description', v)}
                 errors={errors}
@@ -167,7 +161,7 @@ function PastorNewForm({ descriptionMax, onDone }: { descriptionMax: number; onD
     );
 }
 
-function PastorEditForm({ pastor, descriptionMax, onDeleted }: { pastor: HambaTuhan; descriptionMax: number; onDeleted: () => void }) {
+function PastorEditForm({ pastor, onDeleted }: { pastor: HambaTuhan; onDeleted: () => void }) {
     const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
         name: pastor.name,
         description: pastor.description ?? '',
@@ -222,7 +216,6 @@ function PastorEditForm({ pastor, descriptionMax, onDeleted }: { pastor: HambaTu
             <NameDescriptionFields
                 name={data.name}
                 description={data.description}
-                descriptionMax={descriptionMax}
                 onName={(v) => setData('name', v)}
                 onDescription={(v) => setData('description', v)}
                 errors={errors}
@@ -278,14 +271,12 @@ function ImageField({
 function NameDescriptionFields({
     name,
     description,
-    descriptionMax,
     onName,
     onDescription,
     errors,
 }: {
     name: string;
     description: string;
-    descriptionMax: number;
     onName: (v: string) => void;
     onDescription: (v: string) => void;
     errors: Partial<Record<'name' | 'description', string>>;
@@ -303,16 +294,13 @@ function NameDescriptionFields({
                 <textarea
                     id="description"
                     rows={3}
-                    maxLength={descriptionMax}
                     value={description}
                     onChange={(e) => onDescription(e.target.value)}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden"
                 />
                 <div className="flex justify-between">
                     <InputError message={errors.description} />
-                    <span className="text-xs text-muted-foreground">
-                        {description.length}/{descriptionMax}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{description.length} karakter</span>
                 </div>
             </div>
         </>

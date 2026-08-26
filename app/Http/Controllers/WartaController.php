@@ -4,12 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\HomeSetting;
 use App\Models\Warta;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class WartaController extends Controller
 {
+    private function sundayRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) {
+            if (! Carbon::parse($value)->isSunday()) {
+                $fail('Tanggal ibadah harus hari Minggu.');
+            }
+        };
+    }
+
     public function index()
     {
         $home = HomeSetting::current();
@@ -26,7 +36,7 @@ class WartaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'service_date' => 'required|date|unique:warta,service_date',
+            'service_date' => ['required', 'date', 'unique:warta,service_date', $this->sundayRule()],
             'title' => 'nullable|string|max:255',
             'source_url' => 'required|url|max:2048',
         ]);
@@ -44,7 +54,7 @@ class WartaController extends Controller
     public function update(Request $request, Warta $warta)
     {
         $validated = $request->validate([
-            'service_date' => ['required', 'date', Rule::unique('warta', 'service_date')->ignore($warta->id)],
+            'service_date' => ['required', 'date', Rule::unique('warta', 'service_date')->ignore($warta->id), $this->sundayRule()],
             'title' => 'nullable|string|max:255',
             'source_url' => 'required|url|max:2048',
         ]);

@@ -2,6 +2,7 @@ import { format, parse } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { useState } from 'react';
+import { type Matcher } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -14,14 +15,16 @@ interface DatePickerProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    /** react-day-picker matcher(s) for dates that cannot be selected. */
+    disabled?: Matcher | Matcher[];
 }
 
-export function DatePicker({ id, value, onChange, placeholder = 'Pilih tanggal' }: DatePickerProps) {
+export function DatePicker({ id, value, onChange, placeholder = 'Pilih tanggal', disabled }: DatePickerProps) {
     const [open, setOpen] = useState(false);
     const selected = value ? parse(value, 'yyyy-MM-dd', new Date()) : undefined;
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} modal>
             <PopoverTrigger asChild>
                 <Button
                     id={id}
@@ -38,6 +41,7 @@ export function DatePicker({ id, value, onChange, placeholder = 'Pilih tanggal' 
                     mode="single"
                     selected={selected}
                     defaultMonth={selected}
+                    disabled={disabled}
                     onSelect={(date) => {
                         if (date) {
                             onChange(format(date, 'yyyy-MM-dd'));

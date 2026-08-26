@@ -9,13 +9,10 @@ use Inertia\Inertia;
 
 class HambaTuhanController extends Controller
 {
-    private const DESCRIPTION_MAX = 200;
-
     public function index()
     {
         return Inertia::render('tentangkami', [
             'hambaTuhan' => HambaTuhan::orderBy('order')->get(),
-            'descriptionMax' => self::DESCRIPTION_MAX,
         ]);
     }
 
@@ -23,7 +20,7 @@ class HambaTuhanController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:'.self::DESCRIPTION_MAX,
+            'description' => 'nullable|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp,avif|max:20480',
         ]);
 
@@ -44,7 +41,7 @@ class HambaTuhanController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:'.self::DESCRIPTION_MAX,
+            'description' => 'nullable|string',
         ]);
 
         $hambaTuhan->update($validated);

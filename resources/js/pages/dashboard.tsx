@@ -154,7 +154,12 @@ function WartaDialog({ open, record, onClose }: { open: boolean; record: Warta |
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid gap-2">
                         <Label htmlFor="service_date">Tanggal Ibadah (Minggu)</Label>
-                        <DatePicker id="service_date" value={data.service_date} onChange={(value) => setData('service_date', value)} />
+                        <DatePicker
+                            id="service_date"
+                            value={data.service_date}
+                            onChange={(value) => setData('service_date', value)}
+                            disabled={(date) => date.getDay() !== 0}
+                        />
                         <InputError message={errors.service_date} />
                     </div>
 
